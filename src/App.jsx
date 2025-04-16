@@ -1,18 +1,21 @@
-// Milestone 1: Creare un campo di ricerca e mostrare la lista dei suggerimenti
-// Crea un campo di input (<input type="text">) in cui l’utente può digitare.
+// Milestone 2: Implementare il Debounce per Ottimizzare la Ricerca
+// Attualmente, ogni pressione di tasto esegue una richiesta API. Questo è inefficiente!
+// Implementa una funzione di debounce per ritardare la chiamata API fino a quando l’utente smette di digitare per un breve periodo (es. 300ms)
+// Dopo l’implementazione, verifica che la ricerca non venga eseguita immediatamente a ogni tasto premuto, ma solo dopo una breve pausa.
 
-// Effettua una chiamata API a: 
-// https://boolean-spec-frontend.vercel.app/freetestapi/products?search=[query]
+// Obiettivo: Ridurre il numero di richieste API e migliorare le prestazioni.
 
-// La query deve essere sostituita con il testo digitato.
-// Mostra i risultati API sotto l'input in una tendina di suggerimenti.
+function debounce(callback, delay) {
+  let timer;
+  return (value) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      callback(value);
+    }, delay)
+  };
+};
 
-// Se l'utente cancella il testo, la tendina scompare.
-
-
-// Obiettivo: Mostrare suggerimenti dinamici in base alla ricerca dell'utente.
-
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react';
 
 function App() {
 
@@ -28,13 +31,18 @@ function App() {
       const res = await fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/products?search=${query}`);
       const data = await res.json();
       setSuggestions(data);
+      console.log('API');
     } catch (err) {
       console.error(err)
     }
   }
 
+  const debouncedFetchProducts = useCallback(
+    debounce(fetchProducts, 500)
+    , []);
+
   useEffect(() => {
-    fetchProducts(query);
+    debouncedFetchProducts(query);
   }, [query]);
 
   return (
